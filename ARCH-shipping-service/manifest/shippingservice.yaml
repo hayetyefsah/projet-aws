@@ -1,0 +1,43 @@
+#shippingservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: shippingservice
+  name: shippingservice
+spec:
+  # replicas: 2
+  selector:
+    matchLabels:
+      app: shippingservice
+  template:
+    metadata:
+      labels:
+        app: shippingservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-shipping-service:latest
+          name: shippingservice
+          ports:
+            - containerPort: 50051
+              name: shippingservice
+          env:
+          - name: PORT
+            value: "50051"
+
+---
+#shippingservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: shippingservice
+  name: shippingservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "shippingservice"
+    port: 50051
+    targetPort: 50051
+  selector:
+    app: shippingservice

@@ -1,0 +1,40 @@
+#currencyservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: currencyservice
+  name: currencyservice
+spec:
+  # replicas: 2
+  selector:
+    matchLabels:
+      app: currencyservice
+  template:
+    metadata:
+      labels:
+        app: currencyservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-currency-service-repository:latest
+          name: currencyservice
+          ports:
+            - containerPort: 7000
+              name: currencyservice
+
+---
+#currencyservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: currencyservice
+  name: currencyservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "currencyservice"
+    port: 7000
+    targetPort: 7000
+  selector:
+    app: currencyservice

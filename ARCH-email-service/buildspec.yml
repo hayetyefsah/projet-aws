@@ -1,0 +1,87 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_DEFAULT_REGION: eu-west-2
+    AWS_ACCOUNT_ID: 639962416620  
+    IMAGE_REPO_NAME: arch-email-service-repository
+
+    REPOSITORY_URI: https://git-codecommit.eu-west-2.amazonaws.com/v1/repos/ARCH-email-service
+
+    AWS_ACCESS_KEY_ID: AKIAZKAF3QXWIK3NLHHJ
+    AWS_SECRET_ACCESS_KEY: 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
+
+    MANIFEST_FILE_NAME: emailservice.yaml
+
+# containers:
+#   - name: $IMAGE_REPO_NAME=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+#       image: $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
+
+
+phases:
+
+  install:
+    commands:
+      - echo "Nothing to install while using latest Amazon Linux Docker Image for CodeBuild..."
+      # https://github.com/aws/aws-codebuild-docker-images/blob/master/al2/x86_64/standard/3.0/Dockerfiless
+
+  pre_build:
+    commands:
+      # Configuration de AWS CLI
+      - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+      - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+      - aws configure set default.region $AWS_DEFAULT_REGION
+      # Verication du fonctionnement de la configuration
+      - aws sts get-caller-identity
+
+      # Connexion à ECR :
+      - echo "Logging in to ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+
+      # Création de l'étiquette pour l'image Docker (date, heure + CodeBuild) :
+      # - IMAGE_TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"      
+      # Mise à jour de l'étiquette de l'image dans le manifeste du déploiement Kubernetes :
+      - echo "Updating image tag in kube-manifest..."
+      
+      # Mise à jour de Kube config Home Directory
+      - export KUBECONFIG=$HOME/.kube/config
+
+  build:
+    commands:
+      # Construction de l'image Docker
+      - echo "Build started on `date`"
+      - echo "Building the Docker image..." 
+      # - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG .
+      - docker build -t $IMAGE_REPO_NAME:latest .
+      # - docker build --tag $REPOSITORY_URI:$TAG .
+      # Vérifier la validité de l'une ou l'autre des deux lignes du build
+      # - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker tag $IMAGE_REPO_NAME:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
+      # Vérifier la pertinence de l'attribution de l'étiquette      
+  
+  post_build:
+    commands:
+      # Envoi de l'image Docker dans le répertoire ECR
+      - echo "Build completed on `date`"
+      - echo "Pushing the Docker image..."
+      # - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest
+
+      # - docker push $REPOSITORY_URI:$IMAGE_TAG      
+      # - echo "Docker image push to ECR completed - $IMAGE_REPO_NAME:$IMAGE_TAG"
+      - echo "Docker image push to ECR completed - $IMAGE_REPO_NAME:latest"
+      # Mise en place de kubectl avec le cluster EKS
+      - echo "Updating kubeconfig..."      
+      - aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name ARCH-cluster
+      # Changements de l'application
+      - echo "Applying changes to kube manifest..."
+      # - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$IMAGE_TAG"'@' manifest/adservice.yaml
+      # - kubectl set image deployment/currencyservice currencyservice=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG 
+      #- kubectl set image deployment/currencyservice currencyservice=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:latest 
+      - echo "$IMAGE_TAG"
+      - kubectl apply -f manifest/
+      - echo "Completed applying changes to Kubernetes objects"
+
+artifacts:
+  files:   
+    - manifest/*yaml

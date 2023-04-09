@@ -1,0 +1,43 @@
+#productcatalogservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: productcatalogservice
+  name: productcatalogservice
+spec:
+  # replicas: 2
+  selector:
+    matchLabels:
+      app: productcatalogservice
+  template:
+    metadata:
+      labels:
+        app: productcatalogservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-product-catalog-service:latest
+          name: productcatalogservice
+          ports:
+            - containerPort: 3550
+              name: productcatalog
+          env:
+          - name: PORT
+            value: "3550"
+
+---
+#productcatalogservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: productcatalogservice
+  name: productcatalogservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "productcatalogservice"
+    port: 3550
+    targetPort: 3550
+  selector:
+    app: productcatalogservice

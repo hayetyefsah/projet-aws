@@ -1,0 +1,40 @@
+#paymentservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: paymentservice
+  name: paymentservice
+spec:
+  # replicas: 2
+  selector:
+    matchLabels:
+      app: paymentservice
+  template:
+    metadata:
+      labels:
+        app: paymentservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-payment-service-repository:latest
+          name: paymentservice
+          ports:
+            - containerPort: 50051
+              name: paymentservice
+
+---
+#paymentservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: paymentservice
+  name: paymentservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "paymentservice"
+    port: 50052
+    targetPort: 50051
+  selector:
+    app: paymentservice

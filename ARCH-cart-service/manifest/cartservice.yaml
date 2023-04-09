@@ -1,0 +1,46 @@
+#cartservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cartservice
+  name: cartservice
+spec:
+  # replicas: 2
+  selector:
+    matchLabels:
+      app: cartservice
+  template:
+    metadata:
+      labels:
+        app: cartservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-cart-service-repository:latest
+          name: cartservice
+          ports:
+            - containerPort: 7070
+              name: cartservice
+          env:
+          - name: REDIS_ADDR
+            value: "redis-cart:6379"
+
+---
+#cartservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cartservice
+  name: cartservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "cartservice"
+    port: 7070
+    targetPort: 7070
+  selector:
+    app: cartservice
+
+
+

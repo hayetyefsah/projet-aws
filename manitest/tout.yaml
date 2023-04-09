@@ -1,0 +1,509 @@
+# environnement variables
+# vérifier les port & targetport
+# ==> redirection 443 ???
+
+# retirer les blocs ressources: limits
+
+
+#redis deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: redis
+  name: redis
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - image: redis:alpine
+          name: redis
+          ports:
+            - containerPort: 6379
+              name: redis
+
+---
+#redis service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: redis
+  name: redis
+spec:
+  type: ClusterIP
+  ports:
+  - name: "redis-service"
+    port: 6379
+    targetPort: 6379
+  selector:
+    app: redis
+---
+#adservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: adservice
+  name: adservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: adservice
+  template:
+    metadata:
+      labels:
+        app: adservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/ad-service-repository
+          name: adservice
+          ports:
+            - containerPort: 9555
+              name: adservice
+
+---
+#adservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: adservice
+  name: adservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "adservice"
+    port: 9555
+    targetPort: 9555
+  selector:
+    app: adservice
+  
+---
+#cartservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: cartservice
+  name: cartservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cartservice
+  template:
+    metadata:
+      labels:
+        app: cartservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-cart-service-repository
+          name: cartservice
+          ports:
+            - containerPort: 7070
+              name: cartservice
+
+---
+#cartservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cartservice
+  name: cartservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "cartservice"
+    port: 7070
+    targetPort: 7070
+  selector:
+    app: cartservice
+  
+---
+#checkoutservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: checkoutservice
+  name: checkoutservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: checkoutservice
+  template:
+    metadata:
+      labels:
+        app: checkoutservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-checkout-service
+          name: checkoutservice
+          ports:
+            - containerPort: 5050
+              name: checkoutservice
+
+---
+#checkoutservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: checkoutservice
+  name: checkoutservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "checkoutservice"
+    port: 5050
+    targetPort: 5050
+  selector:
+    app: checkoutservice
+
+---
+#currencyservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: currencyservice
+  name: currencyservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: currencyservice
+  template:
+    metadata:
+      labels:
+        app: currencyservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-currency-service-repository
+          name: currencyservice
+          ports:
+            - containerPort: 7000
+              name: currencyservice
+
+---
+#currencyservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: currencyservice
+  name: currencyservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "currencyservice"
+    port: 7000
+    targetPort: 7000
+  selector:
+    app: currencyservice
+
+---
+#emailservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: emailservice
+  name: emailservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: emailservice
+  template:
+    metadata:
+      labels:
+        app: emailservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-email-service-repository
+          name: emailservice
+          ports:
+            - containerPort: 5000
+              name: emailservice
+
+---
+#emailservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: emailservice
+  name: emailservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "emailservice"
+    port: 8080
+    targetPort: 5000
+  selector:
+    app: emailservice
+
+---
+#frontend deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-frontend
+          name: frontend
+          ports:
+            - containerPort: 8080
+              name: frontend
+
+---
+#frontend service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  type: ClusterIP ## NodePort puis Loadbalancer plus tard
+  ports:
+  - name: "frontend"
+    port: 80
+    targetPort: 8080
+  selector:
+    app: frontend
+
+---
+#loadgenerator deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: loadgenerator
+  name: loadgenerator
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: loadgenerator
+  template:
+    metadata:
+      labels:
+        app: loadgenerator
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-loadgenerator
+          name: loadgenerator
+          # ports:
+          #   - containerPort: 8080
+          #     name: loadgenerator
+
+# ---
+# #loadgenerator service
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   labels:
+#     app: loadgenerator
+#   name: loadgenerator
+# spec:
+#   type: ClusterIP
+#   # ports:
+#   # - name: "loadgenerator"
+#   #   port: 80
+#   #   targetPort: 8080
+#   selector:
+#     app: loadgenerator
+
+---
+#paymentservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: paymentservice
+  name: paymentservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: paymentservice
+  template:
+    metadata:
+      labels:
+        app: paymentservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-payment-service-repository
+          name: paymentservice
+          ports:
+            - containerPort: 50051
+              name: paymentservice
+
+---
+#paymentservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: paymentservice
+  name: paymentservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "paymentservice"
+    port: 50052
+    targetPort: 50051
+  selector:
+    app: paymentservice
+
+---
+#productcatalogservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: productcatalogservice
+  name: productcatalogservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: productcatalogservice
+  template:
+    metadata:
+      labels:
+        app: productcatalogservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-product-catalog-service
+          name: productcatalogservice
+          ports:
+            - containerPort: 3550
+              name: productcatalog
+
+---
+#productcatalogservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: productcatalogservice
+  name: productcatalogservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "productcatalogservice"
+    port: 3550
+    targetPort: 3550
+  selector:
+    app: productcatalogservice
+
+---
+#recommendationservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: recommendationservice
+  name: recommendationservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: recommendationservice
+  template:
+    metadata:
+      labels:
+        app: recommendationservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-recommendation-service-repository
+          name: recommendationservice
+          ports:
+            - containerPort: 3550
+              name: recommendation
+
+---
+#recommendationservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: recommendationservice
+  name: recommendationservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "recommendationservice"
+    port: 3550
+    targetPort: 3550
+  selector:
+    app: recommendationservice
+
+---
+#shippingservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: shippingservice
+  name: shippingservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: shippingservice
+  template:
+    metadata:
+      labels:
+        app: shippingservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/arch-shipping-service
+          name: shippingservice
+          ports:
+            - containerPort: 50051
+              name: shippingservice
+
+---
+#shippingservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: shippingservice
+  name: shippingservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "shippingservice"
+    port: 50051
+    targetPort: 50051
+  selector:
+    app: shippingservice
+

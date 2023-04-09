@@ -1,0 +1,40 @@
+#adservice deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: adservice
+  name: adservice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: adservice
+  template:
+    metadata:
+      labels:
+        app: adservice
+    spec:
+      containers:
+        - image: 639962416620.dkr.ecr.eu-west-2.amazonaws.com/ad-service-repository:latest
+          name: adservice
+          ports:
+            - containerPort: 9555
+              name: adservice
+
+---
+#adservice service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: adservice
+  name: adservice
+spec:
+  type: ClusterIP
+  ports:
+  - name: "adservice"
+    port: 9555
+    targetPort: 9555
+  selector:
+    app: adservice
